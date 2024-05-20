@@ -1,0 +1,92 @@
+@extends('layouts.app')
+@section('tittle', 'Expertis | Absensi')
+@section('content')
+<div class="page-wrapper">
+   <!-- ============================================================== -->
+   <!-- Bread crumb and right sidebar toggle -->
+   <!-- ============================================================== -->
+   <div class="page-breadcrumb">
+       <div class="row">
+           <div class="col-7 align-self-center">
+               <h3 class="page-title text-truncate text-dark font-weight-medium mb-1">{{ $departement }}</h3>
+               <div class="d-flex align-items-center">
+                   <nav aria-label="breadcrumb">
+                       <ol class="breadcrumb m-0 p-0">
+                           <li class="breadcrumb-item"><a href="index.html">Expenses Claim</a>
+                           </li>
+                       </ol>
+                   </nav>
+               </div>
+           </div>
+       </div>
+   </div>
+   <!-- ============================================================== -->
+   <!-- End Bread crumb and right sidebar toggle -->
+   <!-- ============================================================== -->
+   <!-- ============================================================== -->
+   <!-- Container fluid  -->
+   <!-- ============================================================== -->
+   <div class="container-fluid">
+ 
+       <!-- *************************************************************** -->
+       <!-- Start Sales Charts Section -->
+       <!-- *************************************************************** -->
+           <!-- multi-column ordering -->
+           <div class="row">
+               <div class="col-12">
+                   <div class="card">
+                       <div class="card-body">
+                        @can('access', ['Manager'])   
+                        <div class="row">
+                            <div class="col-6 ">
+                                <label>Filter Tanggal</label>
+                                  <input type="text" id="date-ec" data-config="" class="form-control mt-2">
+                            </div>
+                            <div class="col-6">
+                                <button type="button" class="btn btn-info mt-4 text-right validate-all mt-4" onclick="checkAll()" >Validasi All</button>
+                            </div>
+                        </div>
+                         @endcan
+                           <h4 class="card-title mt-4">Expenses Claim Record</h4>
+                           <div class="table-responsive">
+                               <table id="datatable-ec"
+                                   class="table border table-striped table-bordered text-nowrap" style="width:100%">
+                                   <thead>
+                                       <tr>
+                                        <th class="check-all"></th>
+                                           <th>No</th>
+                                           <th>Day</th>
+                                           <th>Date</th>
+                                           <th >Name</th>
+                                           <th>Meal Allowance</th>
+                                           <th>Transportation</th>
+                                           <th>Parking & Tol</th>
+                                           <th>Overtime</th>
+                                           <th>Status</th>
+                                           <th>Action</th>
+                                       </tr>
+                                   </thead>
+                                   <tbody></tbody>
+                               </table>
+                           </div>
+                       </div>
+                   </div>
+               </div>
+           </div>
+
+   </div>
+   <!-- ============================================================== -->
+   <!-- End Container fluid  -->
+   <!-- ============================================================== -->
+
+
+ <!-- ============================================================== -->
+ <!-- Soucre Modal  -->
+ <!-- ============================================================== -->
+@include('EC.add-ec-modal')
+@include('EC.image-ec-modal')
+@endsection
+
+@section('script') 
+ <script src="{{ asset('assets/js/manager.js') }}"></script>  
+ @endsection
