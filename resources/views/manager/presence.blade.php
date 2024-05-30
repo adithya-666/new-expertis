@@ -11,6 +11,7 @@
                <h3 class="page-title text-truncate text-dark font-weight-medium mb-1">{{ $departement }}</h3>
                <div class="d-flex align-items-center">
                    <nav aria-label="breadcrumb">
+                    
                        <ol class="breadcrumb m-0 p-0">
                            <li class="breadcrumb-item"><a href="index.html">Presence</a>
                            </li>
@@ -142,7 +143,6 @@
                                            <th>Working Hour</th>
                                            <th>Type of Presence</th>     
                                            <th>Status</th>    
-                                           <th>Action</th>
                                        </tr>
                                    </thead>
                                    <tbody></tbody>

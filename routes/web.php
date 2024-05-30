@@ -62,7 +62,6 @@ Route::middleware(['guest'])->group(function () {
       Route::get('/detail-ot-start-time', [AbsensiController::class, 'detailOTStartTime']);
       Route::get('/detail-ot-end-time', [AbsensiController::class, 'detailOTEndTime']);
       Route::put('/end-overtime/{id}', [AbsensiController::class, 'endOverTime']);
-      Route::put('/update-status-absensi/{id}/{status}', [AbsensiController::class, 'updateStatusAbsensi']);
       Route::put('/update-status-validasi-all', [AbsensiController::class, 'updateStatusAbsensiAll']);
 
       // ROLE Manager
@@ -71,7 +70,12 @@ Route::middleware(['guest'])->group(function () {
    
       // ROLE HRD
       Route::get('presence-hrd', [AbsensiController::class, 'presenceHRD']);
-      Route::get('/datatable-absensi-hrd/{startDate}/{endDate}', [AbsensiController::class, 'datatableAbsensiHRD']);
+      Route::get('/datatable-absensi-hrd/{startDate?}/{endDate?}/{employee?}/{department?}/{unit_bisnis?}', [AbsensiController::class, 'datatableAbsensiHRD']);
+      Route::get('/export-excel-hrd/{startDate?}/{endDate?}/{employee?}/{department?}/{unit_bisnis?}', [AbsensiController::class, 'exportExcel']);
+      Route::get('/select-employee', [AbsensiController::class, 'selectEmployee']);
+      Route::get('/select-department', [AbsensiController::class, 'selectDepartment']);
+      Route::get('/select-unit-bisnis', [AbsensiController::class, 'selectUnitBisnis']);
+      Route::put('/update-status-absensi/{id}/{status}', [AbsensiController::class, 'updateStatusAbsensi']);
     });
 
     // Expenses Claim : data input nota bensin , transportasi, tol dan uang makan
@@ -85,6 +89,17 @@ Route::middleware(['guest'])->group(function () {
       Route::get('/expenses-claims-manager', [ECController::class, 'expensesClaimsManager']);
       Route::get('/datatable-explains-claims-manager/{startDate}/{endDate}', [ECController::class, 'datatableExplainsClaimsManager']);
       Route::put('/update-status-ec/{id}/{status}', [ECController::class, 'updateStatusEC']);
+      Route::put('/update-status-transportasi-manager/{id}', [ECController::class, 'updateStatusECTransportasi']);
+    
+    
+      // ROLE HRD 
+      Route::get('/expenses-claims-hrd', [ECController::class, 'expensesClaimHRD']);
+      Route::get('/datatable-explains-claims-hrd/{startDate?}/{endDate?}/{employee?}/{department?}/{unit_bisnis?}', [ECController::class, 'datatableExplainsClaimHRD']);
+      Route::put('/update-status-ec-hrd/{id}/{status}', [ECController::class, 'updateStatusEcHRD']);
+      Route::get('/select-employee-ec', [ECController::class, 'selectEmployee']);
+      Route::get('/select-department-ec', [ECController::class, 'selectDepartment']);
+      Route::get('/select-unit-bisnis-ec', [ECController::class, 'selectUnitBisnis']);
+      Route::get('/export-excel-hrd/{startDate?}/{endDate?}/{employee?}/{department?}/{unit_bisnis?}', [ECController::class, 'exportExcel']);
      });
 
 

@@ -162,7 +162,7 @@ btn += ` </ul>`;
     const startDate = null;
     const endDate = null;
     dt =  $('#datatable-ec').DataTable({
-        responsive: true,
+        // responsive: true,
         searchDelay: 500,
         processing: true,
         serverSide: true,
@@ -274,6 +274,7 @@ function thousand()
   });
 }
 
+
 var formCreateEC = () => {
   $('#formCreateEC').submit(function (e) { 
     e.preventDefault();
@@ -308,9 +309,12 @@ var formCreateEC = () => {
   });
 }
 
+
 document.addEventListener('DOMContentLoaded', function(){
     date();
     datatable();
     thousand();
     formCreateEC();
+
+
 });

@@ -23,7 +23,11 @@ $.ajaxSetup({
   });
 
   var date = () => {
+    var start = moment();
+    var end = moment();
     $('#date-absensi').daterangepicker({
+      startDate: start,
+      endDate: end,
       "showButtonPanel": true,
       "ranges": {
         'Hari ini': [moment(), moment()],
@@ -37,15 +41,38 @@ $.ajaxSetup({
         format: 'YYYY/MM/DD'
     },
    
-  }, function(start, end, label) {
-    console.log("New date range selected: " + start.format('YYYY-MM-DD') + ' to ' + end.format('YYYY-MM-DD') + ' (predefined range: ' + label + ')');
-  
-    const startDate = start.format('YYYY-MM-DD');
-    const endDate = end.format('YYYY-MM-DD');
-    const newUrl = '/absensi/datatable-absensi-hrd/' + startDate + '/' + endDate;
+  },  function (start, end){
+    $("#date-absensi").html(start.format("YYYY-MM-DD") + "," + end.format("YYYY-MM-DD"));
+  } );
+
+    $('#date-absensi').on('change', function(){
+
+    let employee = $('#employee').val();
+    let department = $('#department').val();
+    let unit_bisnis = $('#unit-bisnis').val();
+
+
+    const startDate = $(this).data('daterangepicker').startDate.format('YYYY-MM-DD');
+    const endDate = $(this).data('daterangepicker').endDate.format('YYYY-MM-DD');
+    const newUrl = '/absensi/datatable-absensi-hrd/' + startDate + '/' + endDate + '/' + employee + '/' + department + '/' + unit_bisnis;
     dt.ajax.url(newUrl).load();
+
+
+    $('#export-excel').attr('href', '/absensi/export-excel-hrd/'+ startDate + '/' + endDate + '/' + employee + '/' + department + '/' + unit_bisnis);
   });
+
   
+  $('#employee').on('change',function (e) { 
+    $('#date-absensi').trigger('change');
+  });
+  $('#department').on('change',function (e) { 
+    $('#date-absensi').trigger('change');
+  });
+  $('#unit-bisnis').on('change',function (e) { 
+    $('#date-absensi').trigger('change');
+  });
+
+
   }
 
   var columnsDataTableReport = [
@@ -64,6 +91,7 @@ $.ajaxSetup({
     {data : 'hari',  name:'presences.hari'},
     {data: 'tanggal',  name:'presences.tanggal'},
     { data: 'nama_pegawai', name:'employees.nama_pegawai' },
+    { data: 'departemen', name:'employees.departemen' },
     {data : 'jam_masuk',   name:'presences.jam_masuk',
     render : function(data, type, row){
         let checkIn = row.jam_masuk.slice(0, 5);
@@ -121,33 +149,23 @@ $.ajaxSetup({
     { data: 'id' , className: 'text-center' ,  name:'presences.id',
     render : function(data, type, row){
 
-let btn = ``;
+      let btn = ``;
 
-btn = `
-<span class="badge text-bg-light dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-<i class="bi bi-three-dots"></i>
-</span>
-<ul class="dropdown-menu">`;
-if(row.status_validasi == null){
-  btn += `<li><button class="dropdown-item text-success text-center" data-status="validasi" onclick="validasiAbsensi(${row.id} , 'validasi')">Validasi <i class="bi bi-check-square"></i></button></li>
- `;
-} else {
-btn += `<li><button class="dropdown-item text-danger text-center" data-status="rejected" onclick="validasiAbsensi(${row.id}, 'rejected')">Rejected <i class="bi bi-x-square"></i></button></li>
-`;
-}
-btn += ` </ul>`;
-return btn;
-    }
- }
+      if(row.status_validasi == null){
+        btn = `<span class="badge text-bg-success" onclick="validasiAbsensi(${row.id} , 'validasi')">Validasi <i class="bi bi-check-square"></i></span>`;
+   } else {
+       btn = `<span class="badge text-bg-danger" onclick="validasiAbsensi(${row.id}, 'rejected')">Rejected <i class="bi bi-x-square"></i></span>`;
+   }
+      return btn;
+          }
+      }
       ];
 
 
     var dt;
     var datatable = () => {
-    const startDate = null;
-    const endDate = null;
-    dt =  $('#absensi-datatable').DataTable({
-        responsive: true,
+    dt =  $('#absensi-datatable-hrd').DataTable({
+        // responsive: true,
         searchDelay: 500,
         processing: true,
         serverSide: true,
@@ -162,9 +180,9 @@ return btn;
           },
         ordering: true,
         order : [[2, 'desc']],
-        stateSave: false,
+        // stateSave: false,
         ajax: {
-            url: '/absensi/datatable-absensi-hrd/'+startDate+'/'+endDate
+            url: '/absensi/datatable-absensi-hrd'
         },
         columns: columnsDataTableReport
         });
@@ -175,7 +193,7 @@ return btn;
 function validasiAbsensi(id, status) {
   $.ajax({
     type: "PUT",
-    url: "absensi/update-status-absensi/" + id + '/' + status,
+    url: "/absensi/update-status-absensi/" + id + '/' + status,
     success: function (response) {
         toastMixin.fire({
             animation: true,
@@ -214,7 +232,11 @@ function checkAll(){
 
 
 var dateEC = () => {
-    $('#date-ec').daterangepicker({
+  var start = moment();
+  var end = moment();
+  $('#date-ec').daterangepicker({
+    startDate: start,
+    endDate: end,
       "showButtonPanel": true,
       "ranges": {
         'Hari ini': [moment(), moment()],
@@ -228,13 +250,36 @@ var dateEC = () => {
         format: 'YYYY/MM/DD'
     },
    
-  }, function(start, end, label) {
+  },  function (start, end){
+    $("#date-ec").html(start.format("YYYY-MM-DD") + "," + end.format("YYYY-MM-DD"));
+  } );
+
+
+  $('#date-ec').on('change', function(){
+
+    let employee_id = $('#employee-ec').val();
+    let department = $('#department-ec').val();
+    let unit_bisnis = $('#unit-bisnis-ec').val();
+
   
-    const startDate = start.format('YYYY-MM-DD');
-    const endDate = end.format('YYYY-MM-DD');
-    const newUrl = '/ec/datatable-explains-claims-manager/' + startDate + '/' + endDate;
+    const startDate = $(this).data('daterangepicker').startDate.format('YYYY-MM-DD');
+    const endDate = $(this).data('daterangepicker').endDate.format('YYYY-MM-DD');
+    const newUrl = '/ec/datatable-explains-claims-hrd/' + startDate + '/' + endDate + '/' + employee_id + '/' + department + '/';
     dtEC.ajax.url(newUrl).load();
+
+    $('#export-excel-ec').attr('href', '/ec/export-excel-hrd/'+ startDate + '/' + endDate + '/' + employee_id  + '/' + department  + '/' + unit_bisnis);
   });
+
+  $('#employee-ec').on('change',function (e) { 
+    $('#date-ec').trigger('change');
+  });
+  $('#department-ec').on('change',function (e) { 
+    $('#date-ec').trigger('change');
+  });
+  $('#unit-bisnis-ec').on('change',function (e) { 
+    $('#date-ec').trigger('change');
+  });
+
   
   }
 
@@ -254,6 +299,7 @@ var dateEC = () => {
     {data : 'hari'},
     {data: 'tanggal'},
     { data: 'nama_pegawai', name: 'employees.nama_pegawai' },
+    { data: 'departemen', name: 'employees.departemen' },
     {data : 'uang_makan',
     render : function(data, type, row){
       if(row.uang_makan !== null){
@@ -271,7 +317,13 @@ var dateEC = () => {
         let rupiahFormat = new Intl.NumberFormat('id-ID', {
           currency: 'IDR',
         }).format(row.transportasi);
-      return `<p class="image-transportasi ">Rp ${rupiahFormat}</p>`;
+        if(row.status_transportasi == 'Divalidasi' || row.status_transportasi == 'Dibayar'){
+          return `<p class="image-transportasi text-success">Rp ${rupiahFormat}</p>`;
+        }else if(row.status_transportasi == 'Ditolak'){
+          return `<p class="image-transportasi text-danger">Rp ${rupiahFormat}</p>`;
+        }else {
+          return `<p class="image-transportasi">Rp ${rupiahFormat}</p>`;
+        }
       } else {
         return '-';
       }
@@ -283,7 +335,13 @@ var dateEC = () => {
         let rupiahFormat = new Intl.NumberFormat('id-ID', {
           currency: 'IDR',
         }).format(row.parkir_tol);
-        return `<p class="image-parkir-tol">Rp ${rupiahFormat}</p>`;
+        if( row.status_parkir_tol == 'Divalidasi' || row.status_parkir_tol == 'Dibayar'){
+          return `<p class="image-parkir-tol text-success">Rp ${rupiahFormat}</p>`;
+        }else if(row.status_parkir_tol == 'Ditolak'){
+          return `<p class="image-parkir-tol text-danger">Rp ${rupiahFormat}</p>`;
+        } else {
+          return `<p class="image-parkir-tol">Rp ${rupiahFormat}</p>`;
+        }
       } else {
         return '-';
       }
@@ -302,36 +360,37 @@ var dateEC = () => {
     }},
     {data : 'status_transportasi',
     render : function(data, type, row){
-        let status = '';
-        if(row.status_acc_finance == 'Dibayar'){
-            status = `<span class="badge text-bg-info">Dibayar/span>`;
-          }
-      else  if(row.status_acc_hrd == 'Diterima'){
-            status = `<span class="badge text-bg-success">Divalidasi</span>`;
-          }
-      else  if(row.status_acc_manager == 'Divalidasi'){
-            status = `<span class="badge text-bg-primary">Divalidasi</span>`;
-          }
-       else if(row.status_transportasi == 'Mengajukan' || row.status_parkir_tol == 'Mengajukan'){
-            status = `<span class="badge text-bg-warning">Mengajukan</span>`;
-          }
-        else if(row.status_transportasi == null && row.status_parkir_tol == null ){
-          status = `<span class="badge text-bg-secondary">Belum Mengajukan</span>`;
-      }
-       
-        return status;
-    }},
+      let status = '';
+      if(row.status_acc_finance == 'Dibayar'){
+          status = `<span class="badge text-bg-info">Dibayar/span>`;
+        }
+    else  if(row.status_acc_hrd == 'Divalidasi'){
+          status = `<span class="badge text-bg-success">Divalidasi</span>`;
+        }
+    else  if(row.status_acc_manager == 'Diterima'){
+          status = `<span class="badge text-bg-primary">Diterima</span>`;
+        }
+     else if(row.status_transportasi == 'Mengajukan' || row.status_parkir_tol == 'Mengajukan'){
+          status = `<span class="badge text-bg-warning">Mengajukan</span>`;
+        }
+      else if(row.status_transportasi == null && row.status_parkir_tol == null ){
+        status = `<span class="badge text-bg-secondary">Belum Mengajukan</span>`;
+    }
+     
+      return status;
+  }},
 
     { data: 'id' , className: 'text-center' , 
         render : function(data, type, row){
 
     let btn = ``;
-if(row.status_acc_hrd !== 'Diterima' || row.status_acc_finance !== 'Dibayar'){
-  if(row.status_transportasi == 'Mengajukan' || row.status_parkir_tol == 'Mengajukan'){
-     btn = `<span class="badge text-bg-success" onclick="validasiEC(${row.id} , 'validasi', '${row.status_transportasi}', '${row.status_parkir_tol}')">Validasi <i class="bi bi-check-square"></i></span>`;
-} else {
+
+   
+    
+  if(row.status_acc_hrd === 'Diterima'){
     btn = `<span class="badge text-bg-danger" onclick="validasiEC(${row.id}, 'rejected', '${row.status_transportasi}', '${row.status_parkir_tol}')">Rejected <i class="bi bi-x-square"></i></span>`;
-}
+  } else {
+    btn = `<span class="badge text-bg-success" onclick="validasiEC(${row.id} , 'validasi', '${row.status_transportasi}', '${row.status_parkir_tol}')">Validasi <i class="bi bi-check-square"></i></span>`;
 }
     return btn;
         }
@@ -341,10 +400,8 @@ if(row.status_acc_hrd !== 'Diterima' || row.status_acc_finance !== 'Dibayar'){
 
     var dtEC;
     var datatableEC = () => {
-    const startDate = null;
-    const endDate = null;
     dtEC =  $('#datatable-ec').DataTable({
-        responsive: true,
+        // responsive: true,
         searchDelay: 500,
         processing: true,
         serverSide: true,
@@ -361,7 +418,7 @@ if(row.status_acc_hrd !== 'Diterima' || row.status_acc_finance !== 'Dibayar'){
         order : [[2, 'desc']],
         stateSave: false,
         ajax: {
-            url: '/ec/datatable-explains-claims-manager/' + startDate + '/' + endDate
+            url: '/ec/datatable-explains-claims-hrd'
         },
         columns: columnsDataTableEC
         });
@@ -379,8 +436,8 @@ if(row.status_acc_hrd !== 'Diterima' || row.status_acc_finance !== 'Dibayar'){
         dtEC.on('click', '.image-parkir-tol', function () {
           $('.picture-ec').attr('src', null);
           $('#image-ec-modal').modal('show');
-          const rowIndex = dt.row($(this).closest('tr')).index();
-          const rowData = dt.row(rowIndex).data();
+          const rowIndex = dtEC.row($(this).closest('tr')).index();
+          const rowData = dtEC.row(rowIndex).data();
           $('.picture-ec').attr('src', '/storage/ec/' + rowData.bukti_parkir_tol);
         });
     }     
@@ -389,7 +446,7 @@ if(row.status_acc_hrd !== 'Diterima' || row.status_acc_finance !== 'Dibayar'){
     function validasiEC(id, status, status_transportasi = null, status_parkir_tol = null) {
         $.ajax({
           type: "PUT",
-          url: "/ec/update-status-ec/" + id + '/' + status,
+          url: "/ec/update-status-ec-hrd/" + id + '/' + status,
           data :{
             status_transportasi : status_transportasi,
             status_parkir_tol : status_parkir_tol 
@@ -404,11 +461,348 @@ if(row.status_acc_hrd !== 'Diterima' || row.status_acc_finance !== 'Dibayar'){
           }
         });
       }
-    
+
+
+      var selectEmployee = () => {
+        $( '#employee' ).select2( {
+            theme: "bootstrap-5",
+            placeholder: $( this ).data( 'placeholder' ),
+            allowClear: true,
+            closeOnSelect: true,
+            ajax: {
+                url: '/absensi/select-employee',
+                dataType: 'json',
+                delay: 250,
+                data: function (params) {
+                  return {
+                    query: params.term // search term
+                  };
+                },
+                processResults: function (data, params) {
+        
+                  // parse the results into the format expected by Select2
+                  // since we are using custom formatting functions we do not need to
+                  // alter the remote JSON data, except to indicate that infinite
+                  // scrolling can be used
+                  // params.page = params.page || 1;
+        
+                  return {
+                    results: $.map(data, function (item) {
+                      var additionalText = ''
+                      var PrefixText = ''
+                      PrefixText = item.id + " - "
+                      // additionalText = " ["+item.general_code+"]"
+        
+                      return {
+                        text: PrefixText + item.nama_pegawai + additionalText,
+                        id: item.id
+                      }
+                    })
+                  };
+                },
+                cache: true
+              },
+              escapeMarkup: function (markup) { return markup; }, // let our custom formatter work
+              // minimumInputLength: 0,
+              // tags: true, // for create new tags
+              language: {
+                inputTooShort: function () {
+                  return 'Input is too short';
+                },
+                errorLoading: function () {
+                  return `There's error on our side`;
+                },
+                noResults: function () {
+                  return 'There are no result based on your search';
+                }
+              }
+        } );
+      }
+
+
+      var selectDepartment = () => {
+        $( '#department' ).select2( {
+            theme: "bootstrap-5",
+            placeholder: $( this ).data( 'placeholder' ),
+            allowClear: true,
+            closeOnSelect: true,
+            ajax: {
+                url: '/absensi/select-department',
+                dataType: 'json',
+                delay: 250,
+                data: function (params) {
+                  return {
+                    query: params.term // search term
+                  };
+                },
+                processResults: function (data, params) {
+        
+                  // parse the results into the format expected by Select2
+                  // since we are using custom formatting functions we do not need to
+                  // alter the remote JSON data, except to indicate that infinite
+                  // scrolling can be used
+                  // params.page = params.page || 1;
+        
+                  return {
+                    results: $.map(data, function (item) {
+                      var additionalText = ''
+                      var PrefixText = ''
+                   
+                      // additionalText = " ["+item.general_code+"]"
+        
+                      return {
+                        text: item.departemen ,
+                        id: item.departemen 
+                      }
+                    })
+                  };
+                },
+                cache: true
+              },
+              escapeMarkup: function (markup) { return markup; }, // let our custom formatter work
+              // minimumInputLength: 0,
+              // tags: true, // for create new tags
+              language: {
+                inputTooShort: function () {
+                  return 'Input is too short';
+                },
+                errorLoading: function () {
+                  return `There's error on our side`;
+                },
+                noResults: function () {
+                  return 'There are no result based on your search';
+                }
+              }
+        } );
+      }
+
+      var selectUnitBisnis = () => {
+        $( '#unit-bisnis' ).select2( {
+            theme: "bootstrap-5",
+            placeholder: $( this ).data( 'placeholder' ),
+            allowClear: true,
+            closeOnSelect: true,
+            ajax: {
+                url: '/absensi/select-unit-bisnis',
+                dataType: 'json',
+                delay: 250,
+                data: function (params) {
+                  return {
+                    query: params.term // search term
+                  };
+                },
+                processResults: function (data, params) {
+        
+                  // parse the results into the format expected by Select2
+                  // since we are using custom formatting functions we do not need to
+                  // alter the remote JSON data, except to indicate that infinite
+                  // scrolling can be used
+                  // params.page = params.page || 1;
+        
+                  return {
+                    results: $.map(data, function (item) {
+        
+                      return {
+                        text: item.unit_bisnis ,
+                        id: item.unit_bisnis 
+                      }
+                    })
+                  };
+                },
+                cache: true
+              },
+              escapeMarkup: function (markup) { return markup; }, // let our custom formatter work
+              // minimumInputLength: 0,
+              // tags: true, // for create new tags
+              language: {
+                inputTooShort: function () {
+                  return 'Input is too short';
+                },
+                errorLoading: function () {
+                  return `There's error on our side`;
+                },
+                noResults: function () {
+                  return 'There are no result based on your search';
+                }
+              }
+        } );
+      }
+
+
+      var selectEmployeeEC = () => {
+        $( '#employee-ec' ).select2( {
+            theme: "bootstrap-5",
+            placeholder: $( this ).data( 'placeholder' ),
+            allowClear: true,
+            closeOnSelect: true,
+            ajax: {
+                url: '/ec/select-employee-ec',
+                dataType: 'json',
+                delay: 250,
+                data: function (params) {
+                  return {
+                    query: params.term // search term
+                  };
+                },
+                processResults: function (data, params) {
+        
+                  // parse the results into the format expected by Select2
+                  // since we are using custom formatting functions we do not need to
+                  // alter the remote JSON data, except to indicate that infinite
+                  // scrolling can be used
+                  // params.page = params.page || 1;
+        
+                  return {
+                    results: $.map(data, function (item) {
+                      var additionalText = ''
+                      var PrefixText = ''
+                      PrefixText = item.id + " - "
+                      // additionalText = " ["+item.general_code+"]"
+        
+                      return {
+                        text: PrefixText + item.nama_pegawai + additionalText,
+                        id: item.id
+                      }
+                    })
+                  };
+                },
+                cache: true
+              },
+              escapeMarkup: function (markup) { return markup; }, // let our custom formatter work
+              // minimumInputLength: 0,
+              // tags: true, // for create new tags
+              language: {
+                inputTooShort: function () {
+                  return 'Input is too short';
+                },
+                errorLoading: function () {
+                  return `There's error on our side`;
+                },
+                noResults: function () {
+                  return 'There are no result based on your search';
+                }
+              }
+        } );
+      }
+
+
+      var selectDepartmentEC = () => {
+        $( '#department-ec' ).select2( {
+            theme: "bootstrap-5",
+            placeholder: $( this ).data( 'placeholder' ),
+            allowClear: true,
+            closeOnSelect: true,
+            ajax: {
+                url: '/ec/select-department-ec',
+                dataType: 'json',
+                delay: 250,
+                data: function (params) {
+                  return {
+                    query: params.term // search term
+                  };
+                },
+                processResults: function (data, params) {
+        
+                  // parse the results into the format expected by Select2
+                  // since we are using custom formatting functions we do not need to
+                  // alter the remote JSON data, except to indicate that infinite
+                  // scrolling can be used
+                  // params.page = params.page || 1;
+        
+                  return {
+                    results: $.map(data, function (item) {
+                      var additionalText = ''
+                      var PrefixText = ''
+                   
+                      // additionalText = " ["+item.general_code+"]"
+        
+                      return {
+                        text: item.departemen ,
+                        id: item.departemen 
+                      }
+                    })
+                  };
+                },
+                cache: true
+              },
+              escapeMarkup: function (markup) { return markup; }, // let our custom formatter work
+              // minimumInputLength: 0,
+              // tags: true, // for create new tags
+              language: {
+                inputTooShort: function () {
+                  return 'Input is too short';
+                },
+                errorLoading: function () {
+                  return `There's error on our side`;
+                },
+                noResults: function () {
+                  return 'There are no result based on your search';
+                }
+              }
+        } );
+      }
+
+      var selectUnitBisnisEC = () => {
+        $( '#unit-bisnis-ec' ).select2( {
+            theme: "bootstrap-5",
+            placeholder: $( this ).data( 'placeholder' ),
+            allowClear: true,
+            closeOnSelect: true,
+            ajax: {
+                url: '/ec/select-unit-bisnis-ec',
+                dataType: 'json',
+                delay: 250,
+                data: function (params) {
+                  return {
+                    query: params.term // search term
+                  };
+                },
+                processResults: function (data, params) {
+        
+                  // parse the results into the format expected by Select2
+                  // since we are using custom formatting functions we do not need to
+                  // alter the remote JSON data, except to indicate that infinite
+                  // scrolling can be used
+                  // params.page = params.page || 1;
+        
+                  return {
+                    results: $.map(data, function (item) {
+        
+                      return {
+                        text: item.unit_bisnis ,
+                        id: item.unit_bisnis 
+                      }
+                    })
+                  };
+                },
+                cache: true
+              },
+              escapeMarkup: function (markup) { return markup; }, // let our custom formatter work
+              // minimumInputLength: 0,
+              // tags: true, // for create new tags
+              language: {
+                inputTooShort: function () {
+                  return 'Input is too short';
+                },
+                errorLoading: function () {
+                  return `There's error on our side`;
+                },
+                noResults: function () {
+                  return 'There are no result based on your search';
+                }
+              }
+        } );
+      }
 
 document.addEventListener('DOMContentLoaded', function(){
     date();
     datatable();
     dateEC();
     datatableEC();
+    selectEmployee();
+    selectDepartment();
+    selectUnitBisnis();
+    selectEmployeeEC();
+    selectDepartmentEC();
+    selectUnitBisnisEC();
 });

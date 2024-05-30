@@ -21,7 +21,7 @@
             <div class="row">
                 <div class="col-md-12">
                     <div class="form-group mb-3">
-                        <input type="file" name="file_transportasi" class="form-control">
+                      <input type="file" name="file_transportasi" class="form-control">
                       </div>
                 </div>
             </div>

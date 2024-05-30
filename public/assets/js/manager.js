@@ -267,23 +267,37 @@ var dateEC = () => {
     }},
     {data : 'transportasi',
     render : function(data, type, row){
-      if(row.transportasi !== null){
+      if(row.transportasi !== null || row.transportasi !== 0){
         let rupiahFormat = new Intl.NumberFormat('id-ID', {
           currency: 'IDR',
         }).format(row.transportasi);
-      return `<p class="image-transportasi ">Rp ${rupiahFormat}</p>`;
-      } else {
+        if(row.status_transportasi == 'Diterima' || row.status_transportasi == 'Divalidasi' || row.status_transportasi == 'Dibayar'){
+          return `<p class="image-transportasi text-success">Rp ${rupiahFormat}</p>`;
+        }else if(row.status_transportasi == 'Ditolak'){
+          return `<p class="image-transportasi text-danger">Rp ${rupiahFormat}</p>`;
+        }else {
+          return `<p class="image-transportasi">Rp ${rupiahFormat}</p>`;
+        }
+      } 
+      else {
         return '-';
       }
    
     }},
     {data : 'parkir_tol',
     render : function(data, type, row){
-      if(row.parkir_tol !== null){
+      if(row.parkir_tol !== null || row.parkir_tol !== 0){
         let rupiahFormat = new Intl.NumberFormat('id-ID', {
           currency: 'IDR',
         }).format(row.parkir_tol);
-        return `<p class="image-parkir-tol">Rp ${rupiahFormat}</p>`;
+        if(row.status_parkir_tol == 'Diterima' || row.status_parkir_tol == 'Divalidasi' || row.status_parkir_tol == 'Dibayar'){
+          return `<p class="image-parkir-tol text-success">Rp ${rupiahFormat}</p>`;
+        }else if(row.status_parkir_tol == 'Ditolak'){
+          return `<p class="image-parkir-tol text-danger">Rp ${rupiahFormat}</p>`;
+        } else {
+          return `<p class="image-parkir-tol">Rp ${rupiahFormat}</p>`;
+        }
+       
       } else {
         return '-';
       }
@@ -306,11 +320,11 @@ var dateEC = () => {
         if(row.status_acc_finance == 'Dibayar'){
             status = `<span class="badge text-bg-info">Dibayar/span>`;
           }
-      else  if(row.status_acc_hrd == 'Diterima'){
+      else  if(row.status_acc_hrd == 'Divalidasi'){
             status = `<span class="badge text-bg-success">Divalidasi</span>`;
           }
-      else  if(row.status_acc_manager == 'Divalidasi'){
-            status = `<span class="badge text-bg-primary">Divalidasi</span>`;
+      else  if(row.status_acc_manager == 'Diterima'){
+            status = `<span class="badge text-bg-primary">Diterima</span>`;
           }
        else if(row.status_transportasi == 'Mengajukan' || row.status_parkir_tol == 'Mengajukan'){
             status = `<span class="badge text-bg-warning">Mengajukan</span>`;
@@ -328,7 +342,7 @@ var dateEC = () => {
     let btn = ``;
 if(row.status_acc_hrd !== 'Diterima' || row.status_acc_finance !== 'Dibayar'){
   if(row.status_transportasi == 'Mengajukan' || row.status_parkir_tol == 'Mengajukan'){
-     btn = `<span class="badge text-bg-success" onclick="validasiEC(${row.id} , 'validasi', '${row.status_transportasi}', '${row.status_parkir_tol}')">Validasi <i class="bi bi-check-square"></i></span>`;
+     btn = `<span class="badge text-bg-success" onclick="validasiEC(${row.id} , 'diterima', '${row.status_transportasi}', '${row.status_parkir_tol}')">Validasi <i class="bi bi-check-square"></i></span>`;
 } else {
     btn = `<span class="badge text-bg-danger" onclick="validasiEC(${row.id}, 'rejected', '${row.status_transportasi}', '${row.status_parkir_tol}')">Rejected <i class="bi bi-x-square"></i></span>`;
 }
@@ -344,7 +358,7 @@ if(row.status_acc_hrd !== 'Diterima' || row.status_acc_finance !== 'Dibayar'){
     const startDate = null;
     const endDate = null;
     dtEC =  $('#datatable-ec').DataTable({
-        responsive: true,
+        // responsive: true,
         searchDelay: 500,
         processing: true,
         serverSide: true,
@@ -367,11 +381,12 @@ if(row.status_acc_hrd !== 'Diterima' || row.status_acc_finance !== 'Dibayar'){
         });
 
         dtEC.on('click', '.image-transportasi', function () {
-       let log =   $('.picture-ec').attr('src', null);
- 
+
           $('#image-ec-modal').modal('show');
           const rowIndex = dtEC.row($(this).closest('tr')).index();
           const rowData = dtEC.row(rowIndex).data();
+          console.log(rowData);
+          $('#expenses-claim-id').data('expenses-claim-id', rowData.id);
          $('.picture-ec').attr('src', '/storage/ec/' + rowData.bukti_transportasi);
    
         });
@@ -379,8 +394,10 @@ if(row.status_acc_hrd !== 'Diterima' || row.status_acc_finance !== 'Dibayar'){
         dtEC.on('click', '.image-parkir-tol', function () {
           $('.picture-ec').attr('src', null);
           $('#image-ec-modal').modal('show');
-          const rowIndex = dt.row($(this).closest('tr')).index();
-          const rowData = dt.row(rowIndex).data();
+          const rowIndex = dtEC.row($(this).closest('tr')).index();
+          const rowData = dtEC.row(rowIndex).data();
+          console.log(rowData);
+          $('#expenses-claim-id').data('expenses-claim-id', rowData.id);
           $('.picture-ec').attr('src', '/storage/ec/' + rowData.bukti_parkir_tol);
         });
     }     
@@ -401,6 +418,30 @@ if(row.status_acc_hrd !== 'Diterima' || row.status_acc_finance !== 'Dibayar'){
                 });
       
                 dtEC.ajax.reload();
+          }
+        });
+      }
+
+
+      function validasiTransportasi(status){
+
+        const expensesClaimId = $('#expenses-claim-id').data('expenses-claim-id');  
+
+        alert(status);
+
+        $.ajax({
+          type: "PUT",
+          url: "/ec/update-status-transportasi-manager/" + expensesClaimId,
+          data: {
+            status : status
+          },
+          success: function (response) {
+            toastMixin.fire({
+              animation: true,
+              title: response.message
+            });
+            dtEC.ajax.reload();
+            $('#image-ec-modal').modal('hide');
           }
         });
       }

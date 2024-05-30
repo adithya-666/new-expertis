@@ -14,6 +14,8 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Nette\Utils\Json;
 use Illuminate\Support\Facades\File;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\ecExport;
 
 class ECController extends Controller
 {
@@ -233,9 +235,9 @@ class ECController extends Controller
     
 
             switch ($status) {
-                case 'validasi':
+                case 'diterima':
                     expenses_claim::where('id', $id)
-                    ->update(['status_acc_manager' => 'Divalidasi',
+                    ->update(['status_acc_manager' => 'Diterima',
                                 'status_transportasi' => $status_transportasi,
                                 'status_parkir_tol' => $status_parkir_tol
                             ]);
@@ -256,4 +258,225 @@ class ECController extends Controller
             return response()->json(['message' => $e->getMessage(), 500]);
         }
     }
+
+    public function updateStatusECTransportasi(Request $request, $id)
+    {
+        try{
+
+            expenses_claim::where('id', $id)
+            ->update([
+                        'status_transportasi' => $request->status
+                    ]);
+
+            return response()->json(['message' => 'Successfully update status', 200]);
+
+        }catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage(), 500]);
+        }
+    }
+
+   
+// ==============================//
+// Role HRD
+//==============================//
+
+    public function expensesClaimHRD(){
+
+        $user_id  =  Auth::user()->id;
+        
+        $employee =  User::employee($user_id);
+
+        $departement = $employee->departemen;
+
+        return view('HRD.expenses-claims', compact('departement'));
+    }
+
+    public function datatableExplainsClaimHRD($startDate = null , $endDate = null, $employee = null, $departement = null, $unit_bisnis = null)
+    {
+        try{
+          
+           $data =  DB::table('expenses_claims')->select('expenses_claims.*', 'employees.nama_pegawai' , 'employees.departemen');
+           $data->leftJoin('employees','employees.id', 'expenses_claims.pegawai_id'); 
+            if ($startDate == null && $endDate == null) {
+              $from = Carbon::today();
+              $to = Carbon::today();
+          } else {
+              $from = Carbon::parse($startDate);
+              $to = Carbon::parse($endDate);
+          }
+          if($employee !== null && $employee !== 'null'){
+            $data->where('employees.id', $employee);
+          }
+          if($departement !== null && $departement !== 'null'){
+            $data->where('employees.departemen', $departement);
+          }
+          if($unit_bisnis !== null && $unit_bisnis !== 'null'){
+            $data->where('employees.unit_bisnis', $unit_bisnis);
+          }
+            $data->where('expenses_claims.status_acc_manager', 'Diterima');
+            $data->where('expenses_claims.tanggal', '>=' ,$from);
+            $data->where('expenses_claims.tanggal', '<=' ,$to);
+           $data->get();
+           
+            return DataTables::of($data)
+                       ->addIndexColumn()
+                       ->escapeColumns([])
+                       ->make(true);
+
+        }catch(\Exception $e){
+            return response()->json(['message' => $e->getMessage(), 500]);
+        }
+    }
+
+
+    public function updateStatusEcHRD(Request $request, $id, $status)
+    {
+        try{
+
+            $status_transportasi = $request->status_transportasi == 'null' ? NULL : ($request->status_transportasi == 'Diterima' ? 'Divalidasi' : 'Diterima');
+            $status_parkir_tol = $request->status_parkir_tol == 'null' ? NULL : ($request->status_parkir_tol == 'Diterima' ? 'Divalidasi' : 'Diterima');
+    
+
+            switch ($status) {
+                case 'validasi':
+                    expenses_claim::where('id', $id)
+                    ->update(['status_acc_hrd' => 'Divalidasi',
+                                'status_transportasi' => $status_transportasi,
+                                'status_parkir_tol' => $status_parkir_tol
+                            ]);
+                    break;
+                
+                default:
+                expenses_claim::where('id', $id)
+                ->update(['status_acc_hrd' => null,
+                'status_transportasi' => $status_transportasi,
+                'status_parkir_tol' => $status_parkir_tol
+                     ]);
+                    break;
+            }
+
+            return response()->json(['message' => 'Successfully update status', 200]);
+
+        }catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage(), 500]);
+        }
+    }
+
+    public function  selectUnitBisnis(Request $request){
+        try{
+      
+          $search = $request['query'];
+      
+        $data =  DB::table('employees')->distinct()
+        ->where('departemen', 'LIKE', "%{$search}%" )
+        ->where('departemen', '!=', '' )
+        ->get(['employees.unit_bisnis']);
+      
+        return response()->json($data);
+      
+        } catch (\Exception $e) {
+          return response()->json(['message' => $e->getMessage(),500]);
+        }
+      }
+      
+      public function  selectEmployee(Request $request){
+        try{
+      
+          $search = $request['query'];
+      
+        $data =  DB::table('employees')->select('employees.nama_pegawai', 'employees.id')
+        ->where('nama_pegawai', 'LIKE', "%{$search}%" )
+        ->where('employees.id', '!=', 1 )
+        ->where('employees.id', '!=', 2 )
+        ->get();
+      
+        return response()->json($data);
+      
+        } catch (\Exception $e) {
+          return response()->json(['message' => $e->getMessage(),500]);
+        }
+      }
+      
+      
+      public function  selectDepartment(Request $request){
+        try{
+      
+          $search = $request['query'];
+      
+        $data =  DB::table('employees')->distinct()
+        ->where('departemen', 'LIKE', "%{$search}%" )
+        ->where('departemen', '!=' ,'General Manager' )
+        ->get(['employees.departemen']);
+      
+        return response()->json($data);
+      
+        } catch (\Exception $e) {
+          return response()->json(['message' => $e->getMessage(),500]);
+        }
+      }
+
+      public function exportExcel($startDate = null, $endDate = null, $employee_id = null, $departement = null, $unit_bisnis = null){
+        try {
+        
+          if ($startDate == null && $endDate == null) {
+            $from = Carbon::today();
+            $to = Carbon::today();
+        } else {
+            $from = Carbon::parse($startDate);
+            $to = Carbon::parse($endDate);
+        }
+      
+ 
+      
+        $data =  DB::table('expenses_claims');
+        $data->select('employees.nama_pegawai', DB::raw('SUM(expenses_claims.uang_makan)  as total_uang_makan'), DB::raw('SUM(expenses_claims.transportasi)  as total_transportasi'), DB::raw('SUM(expenses_claims.parkir_tol)  as total_parkir_tol'), DB::raw('SUM(expenses_claims.lain_lain)  as total_lain_lain'), DB::raw('SUM(expenses_claims.transportasi + expenses_claims.lain_lain)  as total'));
+        $data->leftJoin('employees', 'employees.id', 'expenses_claims.pegawai_id');
+        if($departement !== null && $departement !== 'null'){
+          $data->where('employees.departemen',  $departement);
+        }
+        if($employee_id  !== null && $employee_id  !== 'null'){
+          $data->where('employees.id',  $employee_id);
+        }
+        if($unit_bisnis  !== null && $unit_bisnis  !== 'null'){
+          $data->where('employees.unit_bisnis',  $unit_bisnis);
+        }
+        $data->where('expenses_claims.tanggal', '>=', $from);
+        $data->where('expenses_claims.tanggal', '<=', $to);
+        $data->where('expenses_claims.status_acc_hrd', 'Divalidasi');
+        $data->groupBy('expenses_claims.pegawai_id');
+       $expenses_claims = $data->get();
+
+            //  dd( $expenses_claims );
+      
+      
+      
+        if ($startDate == null && $endDate == null) {
+          $from = Carbon::today()->now()->format('d-m-Y');
+          $to = Carbon::today()->now()->format('d-m-Y');
+      } else {
+          $from = Carbon::parse($startDate)->format('d-m-Y');
+          $to = Carbon::parse($endDate)->format('d-m-Y');
+      }
+      
+        $information['startDate'] = $from;
+        $information['endDate'] = $to;
+        if($employee_id !== null && $employee_id !== 'null'){
+          $employee_name = DB::table('employees')->where('id', $employee_id)->first();
+          $information['employee_name'] =    $employee_name->nama_pegawai;
+        }else{
+          $information['employee_name'] = '-';
+        }
+        $information['departement'] = $departement !== 'null' ? $departement : '-';
+        $information['unit_bisnis'] = $unit_bisnis !== 'null' ? $unit_bisnis : '-';
+      
+      
+        $fileName = 'Expenses Claims.xlsx'; // Nama file Excel yang akan diunduh
+      
+        return Excel::download(new ecExport($expenses_claims, $information), $fileName);
+      
+        
+        }  catch (\Exception $e) {
+          return response()->json(['message' => $e->getMessage(),500]);
+        }
+      }
 }

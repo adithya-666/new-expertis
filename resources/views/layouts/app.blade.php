@@ -26,7 +26,7 @@
  
     {{-- Datatable --}}
     <link href="{{ asset('assets/css/bootstrap4.css') }}" rel="stylesheet">
-    <link href="{{ asset('assets/css/dataTables.css') }}" rel="stylesheet">
+    {{-- <link href="{{ asset('assets/css/dataTables.css') }}" rel="stylesheet"> --}}
        <!-- Custom CSS -->
        <link href="{{ asset('assets/css/style.css') }}" rel="stylesheet">
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->

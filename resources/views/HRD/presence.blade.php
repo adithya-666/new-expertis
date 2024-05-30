@@ -114,20 +114,44 @@
                <div class="col-12">
                    <div class="card">
                        <div class="card-body">
-                           @can('access', ['Manager'])   
                        <div class="row">
-                           <div class="col-6 ">
+                           <div class="col-md-4 ">
                                <label>Filter Tanggal</label>
-                                 <input type="text" id="date-absensi" data-config="" class="form-control">
+                                 <input type="text" id="date-absensi" data-config="" class="form-control" width="100%">
                            </div>
-                           <div class="col-6">
-                               <button type="button" class="btn btn-info mt-4 text-right validate-all" onclick="checkAll()" >Validasi All</button>
+                           <div class="col-md-2">
+                            <div class="form-group mt-4">
+                                <select class="form-select-sm" name="unit_bisnis" id="unit-bisnis" data-placeholder="Select Unit Bisnis" >
+                                  </select>
+                                  <div class="invalid-feedback"></div>
+                            </div>  
                            </div>
+                           <div class="col-md-3">
+                            <div class="form-group mt-4">
+                                <select class="form-select-sm" name="department" id="department" data-placeholder="Select Department" >
+                                  </select>
+                                  <div class="invalid-feedback"></div>
+                            </div> 
+                           </div>
+                           <div class="col-md-2">
+                            <div class="form-group mt-4">
+                                <select class="form-select-sm" name="employee" id="employee" data-placeholder="Select Employee" >
+                                  </select>
+                                  <div class="invalid-feedback"></div>
+                            </div>  
+                           </div>
+                       
                        </div>
-                        @endcan
+                       <div class="row ">
+                        <div class="col-md-3 d-flex justify-content-between">
+                            <button type="button" class="btn btn-info mt-4 text-right validate-all" onclick="checkAll()" >Validasi All</button> 
+                            <a  href="{{ url('absensi/export-excel-hrd') }}" id="export-excel" class="btn btn-success mt-4 text-right validate-all" >Export Excel <i class="bi bi-file-earmark-spreadsheet-fill"></i></a> 
+                        </div>
+
+                       </div>
                            <h4 class="card-title mt-4">Presence Record</h4>
                            <div class="table-responsive">
-                               <table id="absensi-datatable"
+                               <table id="absensi-datatable-hrd"
                                    class="table border table-striped table-bordered text-nowrap" style="width:100%">
                                    <thead>
                                        <tr> 
@@ -136,6 +160,7 @@
                                            <th>Day</th>
                                            <th>Date</th>   
                                            <th>Name</th>
+                                           <th>Departement</th>
                                            <th>Check In</th>
                                            <th>Check Out</th>
                                            <th>Overdue</th>

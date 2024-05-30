@@ -51,7 +51,29 @@
                                     class="hide-menu">Presence
                                 </span></a>
                         </li>
-                        <li class="sidebar-item"><a href="{{ url('ec/expenses-claims-manager') }}" class="sidebar-link"><span
+                        <li class="sidebar-item"><a href="{{ url('ec/expenses-claims-hrd') }}" class="sidebar-link"><span
+                                    class="hide-menu"> Expenses Claims
+                                </span></a>
+                        </li>
+                        <li class="sidebar-item"><a href="form-checkbox-radio.html" class="sidebar-link"><span
+                                    class="hide-menu">Business Trip
+                                </span></a>
+                        </li>
+                    </ul>
+                </li>
+                @endcan
+                @can('department', ['Finance Departement', 'Manager'])   
+                <li class="list-divider"></li>
+                <li class="nav-small-cap"><span class="hide-menu">Page Finance</span></li>
+                <li class="sidebar-item"> <a class="sidebar-link has-arrow mb-1" href="javascript:void(0)"
+                        aria-expanded="false"><i class="bi bi-person-badge"></i><span
+                            class="hide-menu">HRD </span></a>
+                    <ul aria-expanded="false" class="collapse  first-level base-level-line">
+                        <li class="sidebar-item"><a href="{{ url('absensi/presence-hrd') }}" class="sidebar-link"><span
+                                    class="hide-menu">Presence
+                                </span></a>
+                        </li>
+                        <li class="sidebar-item"><a href="{{ url('ec/expenses-claims-hrd') }}" class="sidebar-link"><span
                                     class="hide-menu"> Expenses Claims
                                 </span></a>
                         </li>
